@@ -39,7 +39,16 @@ pub fn run() void {
     }
     _ = glfw.glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
 
+    // Render Loop
     while (glfw.glfwWindowShouldClose(window) == 0) {
+        // Input
+        processInput(window);
+
+        // Rendering commands
+        gl.glClearColor(0.08, 0.08, 0.08, 1.0);
+        gl.glClear(gl.GL_COLOR_BUFFER_BIT);
+
+        // Check and Call events and swap the buffers
         glfw.glfwSwapBuffers(window);
         glfw.glfwPollEvents();
     }
@@ -50,4 +59,8 @@ fn framebuffer_size_callback(window: c.window, width: c_int, height: c_int) call
     gl.glViewport(0, 0, width, height);
 }
 
-
+fn processInput(window: c.window) void {
+    if (glfw.glfwGetKey(window, glfw.GLFW_KEY_ESCAPE) == glfw.GLFW_PRESS) {
+        glfw.glfwSetWindowShouldClose(window, 1);
+    }
+}
