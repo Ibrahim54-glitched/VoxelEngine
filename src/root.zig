@@ -44,19 +44,23 @@ pub fn run() !void {
 
 
     const vertices = [_]f32 {
-        0.5,  0.5, 0.0,  // top right
-        0.5, -0.5, 0.0,  // bottom right
-       -0.5, -0.5, 0.0,  // bottom left
-       -0.5,  0.5, 0.0,  // top left     
+        // first triangle
+        -0.9, -0.5, 0.0,  // left 
+        -0.0, -0.5, 0.0,  // right
+        -0.45, 0.5, 0.0,  // top 
+        // second triangle
+         0.0, -0.5, 0.0,  // left
+         0.9, -0.5, 0.0,  // right
+         0.45, 0.5, 0.0   // top 
     };
-    const indices  = [_]c_uint {
-        0, 1, 3,
-        1, 2, 3,
-    };
+    // const indices  = [_]c_uint {
+    //     0, 1, 3,
+    //     1, 2, 3,
+    // };
 
     var VBO: c_uint = undefined;
     var VAO: c_uint = undefined;
-    var EBO: c_uint = undefined;
+    // var EBO: c_uint = undefined;
 
     gl.glGenBuffers(1, &VBO);
     gl.glBindBuffer(gl.GL_ARRAY_BUFFER, VBO);
@@ -65,9 +69,9 @@ pub fn run() !void {
     gl.glGenVertexArrays(1, &VAO);
     gl.glBindVertexArray(VAO);
 
-    gl.glGenBuffers(1, &EBO);
-    gl.glBindBuffer(gl.GL_ELEMENT_ARRAY_BUFFER, EBO);
-    gl.glBufferData(gl.GL_ELEMENT_ARRAY_BUFFER, @sizeOf(@TypeOf(indices)), indices[0..].ptr, gl.GL_STATIC_DRAW);
+    // gl.glGenBuffers(1, &EBO);
+    // gl.glBindBuffer(gl.GL_ELEMENT_ARRAY_BUFFER, EBO);
+    // gl.glBufferData(gl.GL_ELEMENT_ARRAY_BUFFER, @sizeOf(@TypeOf(indices)), indices[0..].ptr, gl.GL_STATIC_DRAW);
 
 
     // Vertex Shader
@@ -130,8 +134,9 @@ pub fn run() !void {
 
         gl.glUseProgram(shaderProgram);
         gl.glBindVertexArray(VAO);
-        gl.glDrawElements(gl.GL_TRIANGLES, 6, gl.GL_UNSIGNED_INT, null);
-        gl.glBindVertexArray(0);
+        gl.glDrawArrays(gl.GL_TRIANGLES, 0, 6);
+        // gl.glDrawElements(gl.GL_TRIANGLES, 6, gl.GL_UNSIGNED_INT, null);
+        // gl.glBindVertexArray(0);
 
         // Check and Call events and swap the buffers
         glfw.glfwSwapBuffers(window);
