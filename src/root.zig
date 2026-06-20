@@ -43,36 +43,23 @@ pub fn run() !void {
     var infolog: [512]u8 = undefined;
 
 
-    const vertices = [_]f32 {
-        // first triangle
-        -0.9, -0.5, 0.0,  // left 
-        -0.0, -0.5, 0.0,  // right
-        -0.45, 0.5, 0.0,  // top 
-        // second triangle
-         0.0, -0.5, 0.0,  // left
-         0.9, -0.5, 0.0,  // right
-         0.45, 0.5, 0.0   // top 
+    const vertices1 = [_]f32 {
+        -0.5, -0.5, 0.0,  // left 
+         0.5, -0.5, 0.0,  // right
+         0.0,  0.5, 0.0,  // top 
     };
-    // const indices  = [_]c_uint {
-    //     0, 1, 3,
-    //     1, 2, 3,
-    // };
 
     var VBO: c_uint = undefined;
     var VAO: c_uint = undefined;
-    // var EBO: c_uint = undefined;
 
     gl.glGenBuffers(1, &VBO);
-    gl.glBindBuffer(gl.GL_ARRAY_BUFFER, VBO);
-    gl.glBufferData(gl.GL_ARRAY_BUFFER, @sizeOf(@TypeOf(vertices)), vertices[0..].ptr, gl.GL_STATIC_DRAW);
-
     gl.glGenVertexArrays(1, &VAO);
+
     gl.glBindVertexArray(VAO);
-
-    // gl.glGenBuffers(1, &EBO);
-    // gl.glBindBuffer(gl.GL_ELEMENT_ARRAY_BUFFER, EBO);
-    // gl.glBufferData(gl.GL_ELEMENT_ARRAY_BUFFER, @sizeOf(@TypeOf(indices)), indices[0..].ptr, gl.GL_STATIC_DRAW);
-
+    gl.glBindBuffer(gl.GL_ARRAY_BUFFER, VBO);
+    gl.glBufferData(gl.GL_ARRAY_BUFFER, @sizeOf(@TypeOf(vertices1)), vertices1[0..].ptr, gl.GL_STATIC_DRAW);
+    gl.glVertexAttribPointer(0, 3, gl.GL_FLOAT, gl.GL_FALSE, 3*@sizeOf(f32), null);
+    gl.glEnableVertexAttribArray(0);
 
     // Vertex Shader
     var vertexShader: c_uint = undefined;
@@ -89,7 +76,7 @@ pub fn run() !void {
     }
     defer gl.glDeleteShader(vertexShader);
 
-    // Fragment Shader
+    // Fragment Shader Orange
     var fragmentShader: c_uint = undefined;
     const fragmentShaderSource = @embedFile("shaders/fragmentshader.glsl");
     fragmentShader = gl.glCreateShader(gl.GL_FRAGMENT_SHADER);
@@ -117,10 +104,7 @@ pub fn run() !void {
         std.debug.print("ERROR::SHADER::LINKING::COMPILATION_FAILED\n{s}\n", .{infolog});
         return error.ShaderLinkingCompilationFailed;
     }
-
-    // Linking Vertex Attributes
-    gl.glVertexAttribPointer(0, 3, gl.GL_FLOAT, gl.GL_FALSE, 3*@sizeOf(f32), null);
-    gl.glEnableVertexAttribArray(0);
+    defer gl.glDeleteProgram(shaderProgram);
 
     // -----------------------------------------------------------------
     // Render Loop
@@ -134,7 +118,8 @@ pub fn run() !void {
 
         gl.glUseProgram(shaderProgram);
         gl.glBindVertexArray(VAO);
-        gl.glDrawArrays(gl.GL_TRIANGLES, 0, 6);
+        gl.glDrawArrays(gl.GL_TRIANGLES, 0, 3);
+
         // gl.glDrawElements(gl.GL_TRIANGLES, 6, gl.GL_UNSIGNED_INT, null);
         // gl.glBindVertexArray(0);
 
