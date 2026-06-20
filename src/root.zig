@@ -47,11 +47,11 @@ pub fn run() !void {
         0.5,  0.5, 0.0,  // top right
         0.5, -0.5, 0.0,  // bottom right
        -0.5, -0.5, 0.0,  // bottom left
-       -0.5,  0.5, 0.0   // top left     
+       -0.5,  0.5, 0.0,  // top left     
     };
     const indices  = [_]c_uint {
         0, 1, 3,
-        1, 2, 3
+        1, 2, 3,
     };
 
     var VBO: c_uint = undefined;
@@ -131,6 +131,7 @@ pub fn run() !void {
         gl.glUseProgram(shaderProgram);
         gl.glBindVertexArray(VAO);
         gl.glDrawElements(gl.GL_TRIANGLES, 6, gl.GL_UNSIGNED_INT, null);
+        gl.glBindVertexArray(0);
 
         // Check and Call events and swap the buffers
         glfw.glfwSwapBuffers(window);
@@ -146,5 +147,11 @@ fn framebuffer_size_callback(window: c.window, width: c_int, height: c_int) call
 fn processInput(window: c.window) void {
     if (glfw.glfwGetKey(window, glfw.GLFW_KEY_ESCAPE) == glfw.GLFW_PRESS) {
         glfw.glfwSetWindowShouldClose(window, 1);
+    }
+    if (glfw.glfwGetKey(window, glfw.GLFW_KEY_EQUAL) == glfw.GLFW_PRESS) {
+        gl.glPolygonMode(gl.GL_FRONT_AND_BACK, gl.GL_LINE);
+    }
+    if (glfw.glfwGetKey(window, glfw.GLFW_KEY_MINUS) == glfw.GLFW_PRESS) {
+        gl.glPolygonMode(gl.GL_FRONT_AND_BACK, gl.GL_FILL);
     }
 }
