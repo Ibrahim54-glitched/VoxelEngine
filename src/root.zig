@@ -1,49 +1,32 @@
 const std = @import("std");
+
+const c = @import("c.zig");
+const eh = @import("utils/simple_error_handling.zig");
+const w = @import("window.zig");
+const glf = @import("glad.zig");
+const input = @import("input.zig");
+
+const glfw = c.glfw;
+const gl = c.glad;
 const print = std.debug.print;
 
-const c = @import("c.zig"); const glfw = c.glfw;
-const gl = c.glad;
-
-const eh = @import("utils/simple_error_handling.zig");
 
 // Global Variables
 const WIDTH = 800;
 const HEIGTH = 600;
 
 pub fn run() !void {
-    if (glfw.glfwInit() == 0) {
-        print("GLFW Initializatin Failed", .{});
-        return error.GLFWInitializationFailed;
-    }
-    defer glfw.glfwTerminate();
+    const window = try w.createWindow();
+    defer w.deleteWindow(window);
+    
+    try glf.loadGlad(window);
 
-    glfw.glfwWindowHint(glfw.GLFW_CONTEXT_VERSION_MAJOR, 3);
-    glfw.glfwWindowHint(glfw.GLFW_CONTEXT_VERSION_MINOR, 3);
-    glfw.glfwWindowHint(glfw.GLFW_OPENGL_PROFILE, glfw.GLFW_OPENGL_CORE_PROFILE);
-
-    const window = glfw.glfwCreateWindow(WIDTH, HEIGTH, "VoxelEngine", null, null);
-    if (window == null) {
-        print("Failed to create GLFW window\n", .{});
-        glfw.glfwTerminate();
-        return error.WindowCreationFailed;
-    }
-    defer glfw.glfwDestroyWindow(window);
-
-    glfw.glfwMakeContextCurrent(window);
-    glfw.glfwSwapInterval(1); // Vsync Basically
-                             
-    const loader: gl.GLADloadproc = @ptrCast(&glfw.glfwGetProcAddress);
-    if (gl.gladLoadGLLoader(loader) == 0) {
-        print("Failed To Initialize GLAD\n", .{});
-        return error.GLADInitializationFailed;
-    }
-    _ = glfw.glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
     // -----------------------------------------------------------------
     var success: c_int = undefined; 
     var infolog: [512]u8 = undefined;
 
 
-    const vertices1 = [_]f32 {
+    const vertices = [_]f32 {
         -0.5, -0.5, 0.0,  // left 
          0.5, -0.5, 0.0,  // right
          0.0,  0.5, 0.0,  // top 
@@ -57,7 +40,7 @@ pub fn run() !void {
 
     gl.glBindVertexArray(VAO);
     gl.glBindBuffer(gl.GL_ARRAY_BUFFER, VBO);
-    gl.glBufferData(gl.GL_ARRAY_BUFFER, @sizeOf(@TypeOf(vertices1)), vertices1[0..].ptr, gl.GL_STATIC_DRAW);
+    gl.glBufferData(gl.GL_ARRAY_BUFFER, @sizeOf(@TypeOf(vertices)), vertices[0..].ptr, gl.GL_STATIC_DRAW);
     gl.glVertexAttribPointer(0, 3, gl.GL_FLOAT, gl.GL_FALSE, 3*@sizeOf(f32), null);
     gl.glEnableVertexAttribArray(0);
 
@@ -76,7 +59,7 @@ pub fn run() !void {
     }
     defer gl.glDeleteShader(vertexShader);
 
-    // Fragment Shader Orange
+    // Fragment Shader
     var fragmentShader: c_uint = undefined;
     const fragmentShaderSource = @embedFile("shaders/fragmentshader.glsl");
     fragmentShader = gl.glCreateShader(gl.GL_FRAGMENT_SHADER);
@@ -110,7 +93,7 @@ pub fn run() !void {
     // Render Loop
     while (glfw.glfwWindowShouldClose(window) == 0) {
         // Input
-        processInput(window);
+        input.processInput(window);
 
         // Rendering commands
         gl.glClearColor(0.08, 0.08, 0.08, 1.0);
@@ -120,28 +103,8 @@ pub fn run() !void {
         gl.glBindVertexArray(VAO);
         gl.glDrawArrays(gl.GL_TRIANGLES, 0, 3);
 
-        // gl.glDrawElements(gl.GL_TRIANGLES, 6, gl.GL_UNSIGNED_INT, null);
-        // gl.glBindVertexArray(0);
-
         // Check and Call events and swap the buffers
         glfw.glfwSwapBuffers(window);
         glfw.glfwPollEvents();
-    }
-}
-
-fn framebuffer_size_callback(window: c.window, width: c_int, height: c_int) callconv(.c) void {
-    _ = window;
-    gl.glViewport(0, 0, width, height);
-}
-
-fn processInput(window: c.window) void {
-    if (glfw.glfwGetKey(window, glfw.GLFW_KEY_ESCAPE) == glfw.GLFW_PRESS) {
-        glfw.glfwSetWindowShouldClose(window, 1);
-    }
-    if (glfw.glfwGetKey(window, glfw.GLFW_KEY_EQUAL) == glfw.GLFW_PRESS) {
-        gl.glPolygonMode(gl.GL_FRONT_AND_BACK, gl.GL_LINE);
-    }
-    if (glfw.glfwGetKey(window, glfw.GLFW_KEY_MINUS) == glfw.GLFW_PRESS) {
-        gl.glPolygonMode(gl.GL_FRONT_AND_BACK, gl.GL_FILL);
     }
 }
